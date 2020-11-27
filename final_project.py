@@ -63,9 +63,10 @@ print(f'train_data after mod {train_data.shape}')
 #input shape
 timesteps = train_data.shape[1] #561 timesteps
 features = train_data.shape[2] #1 feature
+print(train_labels.shape)
 
 
-# In[18]:
+# In[6]:
 
 
 model = models.Sequential()
@@ -77,14 +78,18 @@ model.add(layers.Conv1D(filters=128, kernel_size=3, strides=1, activation='relu'
 model.add(layers.MaxPooling1D(pool_size=2))
 model.add(layers.Dropout(0.4))
 model.add(layers.Flatten())
-model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dense(32, activation='relu'))
-model.add(layers.Dense(len(activity_labels)))
+model.add(layers.Dense(512, activation='relu'))
+model.add(layers.Dense(256))
+model.add(layers.Dense(128))
+model.add(layers.Dense(64))
+model.add(layers.Dense(32))
+model.add(layers.Dense(13)) #not sure why the dense layer has to be 13 instead of the 12 activities
+
 
 model.summary()
 
 
-# In[19]:
+# In[7]:
 
 
 # Compiling the model
@@ -93,26 +98,54 @@ model.compile(optimizer='adam',
              metrics=['accuracy'])
 
 
-# In[21]:
+# In[8]:
 
 
 test_loss,test_acc = model.evaluate(test_data, test_labels, verbose=2)
 
 
-# In[22]:
+# In[15]:
 
 
-pred_outs = model.predict(test_data)
-print(pred_outs)
+pred_outs = model.predict_classes(test_data)
+
+#test if the label matches the prediction
+false_pred = 0
+true_pred = 0
+for i in range(len(pred_outs)):
+    #print(f'test_label: {activity_labels[test_labels[i][0]]}\npredicted_label:{activity_labels[pred_outs[i]]}')
+    if not (1 < pred_outs[i] or pred_outs[i] < 13):
+        print('prediction out of bounds')
+    if pred_outs[i]==test_labels[i][0]:
+        #print('true')
+        true_pred += 1
+    else:
+        #print('false')
+        false_pred += 1
+print(f'false predictions:{false_pred}')
+print(f'true predictions:{true_pred}')
+print(f'prediction accuracy: {true_pred/len(pred_outs)}')
 
 
-# In[23]:
+# In[12]:
 
 
 model.fit(train_data, 
           train_labels, 
-          epochs=100, 
+          epochs=10, 
           validation_data=(test_data, test_labels))
 
 test_loss,test_acc = model.evaluate( test_data, test_labels, verbose=2)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
